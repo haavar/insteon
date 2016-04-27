@@ -6,6 +6,10 @@ package com.haavar.insteon;
 public class DeviceId {
     private byte[] id;
 
+    public DeviceId(byte high, byte middle, byte low) {
+        this(new byte[]{high, middle, low});
+    }
+
     public DeviceId(byte[] id) {
         assert id.length == 3: "Device id is not 3 bytes";
         this.id = id;

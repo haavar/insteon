@@ -31,4 +31,8 @@ public class ByteUtils {
         return builder.toString();
     }
 
+    public static boolean isBitSet(byte b, int position) {
+       return  (b & (1 << position)) != 0;
+    }
+
 }

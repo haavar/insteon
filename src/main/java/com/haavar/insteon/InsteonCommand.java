@@ -4,7 +4,7 @@ package com.haavar.insteon;
  * Source: http://cache.insteon.com/pdf/INSTEON_Command_Tables_20070925a.pdf
  * @author Haavar Valeur
  */
-enum Command {
+public enum InsteonCommand {
     NO_OP(0x00),
     ASSIGN_TO_GROUP(0x01),
     DELETE_FROM_GROUP(0x02),
@@ -35,12 +35,12 @@ enum Command {
 
     private final byte code;
 
-    Command(int code) {
+    InsteonCommand(int code) {
         this.code = (byte)code;
     }
 
-    static Command getCommand(byte cmd1) {
-        for (Command cmd : Command.values()) {
+    public static InsteonCommand getCommand(byte cmd1) {
+        for (InsteonCommand cmd : InsteonCommand.values()) {
             if (cmd.code == cmd1) {
                 return cmd;
             }

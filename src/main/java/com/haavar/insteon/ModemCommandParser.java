@@ -1,5 +1,10 @@
 package com.haavar.insteon;
 
+import com.haavar.insteon.messages.AllLinkResponse;
+import com.haavar.insteon.messages.BinaryMessage;
+import com.haavar.insteon.messages.ReplyMessage;
+import com.haavar.insteon.messages.Message;
+import com.haavar.insteon.messages.StandardMessageReceived;
 import jssc.SerialPort;
 import jssc.SerialPortException;
 import jssc.SerialPortTimeoutException;
@@ -15,7 +20,7 @@ public class ModemCommandParser {
     public static final byte HELLO = 0x02;
 
     //todo: should take an interface, and not a serial port reference
-    public StandardMessage readMessage(SerialPort serialPort, int readTimeout) throws InvalidStateException, IOException {
+    public Message readMessage(SerialPort serialPort, int readTimeout) throws InvalidStateException, IOException {
         try {
             byte[] header;
             // should I listen for events intead?
@@ -34,7 +39,10 @@ public class ModemCommandParser {
                 throw new InvalidStateException();
             }
 
-            byte[] body;
+            byte[] body = null;
+            if (modemCommand.length != null) {
+                body = serialPort.readBytes(modemCommand.length, readTimeout);
+            }
             switch (modemCommand) {
                 case SEND_STANDARD_OR_EXTENDED_MESSAGE_REPLY:
                     // <to:3><flag:1><
@@ -51,12 +59,15 @@ public class ModemCommandParser {
 
                     return null;// todo: should probably return something...
                 case STANDARD_MESSAGE_RECEIVED:
-                    body = serialPort.readBytes(modemCommand.length, readTimeout);
-                    return new StandardMessage(body);
+                    return new StandardMessageReceived(body);
+                case ALL_LINK_RECORD_RESPONSE:
+                    return new AllLinkResponse(body);
+                case GET_FIRST_ALL_LINK_RECORD_REPLY:
+                case GET_NEXT_ALL_LINK_RECORD_REPLY:
+                    return new ReplyMessage(modemCommand, body);
                 default:
-                    body = serialPort.readBytes(modemCommand.length, readTimeout);
-                    log.error("Ignoring modem command " + modemCommand + " body=" + ByteUtils.bytesToHex(body));
-                    return null;// todo: should probably return just a binary message...
+                    log.info("Handling generic modem command " + modemCommand);
+                    return new BinaryMessage(modemCommand, body);
             }
         } catch (SerialPortException e) {
             log.error("Error reading message from " + serialPort.getPortName(), e);

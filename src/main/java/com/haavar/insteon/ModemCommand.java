@@ -48,9 +48,9 @@ public enum ModemCommand {
     UNKNOWN_MESSAGE_7F(0x7f, 2, false);
     // more here: http://cache.insteon.com/pdf/INSTEON_Modem_Developer's_Guide_20071012a.pdf
 
-    byte cmd;
-    Integer length;
-    boolean toModem;
+    public final byte cmd;
+    public final Integer length;
+    public final boolean toModem;
 
     ModemCommand(int command, Integer len, boolean toModem) {
         this.cmd = (byte)command;
