@@ -1,8 +1,11 @@
 package com.haavar.insteon;
 
+import lombok.EqualsAndHashCode;
+
 /**
  * @author Haavar Valeur
  */
+@EqualsAndHashCode
 public class DeviceId {
     private byte[] id;
 

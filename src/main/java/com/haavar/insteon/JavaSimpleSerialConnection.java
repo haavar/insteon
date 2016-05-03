@@ -3,7 +3,6 @@ package com.haavar.insteon;
 import com.haavar.insteon.messages.Message;
 import com.haavar.insteon.messages.OutboundMessage;
 import com.haavar.insteon.messages.Reply;
-import com.haavar.insteon.messages.SimpleReply;
 import jssc.SerialPort;
 import jssc.SerialPortException;
 import lombok.extern.slf4j.Slf4j;

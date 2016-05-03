@@ -2,6 +2,7 @@ package com.haavar.insteon;
 
 import com.haavar.insteon.messages.AllLinkResponse;
 import com.haavar.insteon.messages.BinaryMessage;
+import com.haavar.insteon.messages.NotOkReply;
 import com.haavar.insteon.messages.SimpleReply;
 import com.haavar.insteon.messages.Message;
 import com.haavar.insteon.messages.StandardMessageReceived;
@@ -22,19 +23,24 @@ public class ModemCommandParser {
     //todo: should take an interface, and not a serial port reference
     public Message readMessage(SerialPort serialPort, int readTimeout) throws InvalidStateException, IOException {
         try {
-            byte[] header;
+            byte[] okByte;
             // should I listen for events intead?
             try {
-                header = serialPort.readBytes(2, readTimeout);
+                okByte = serialPort.readBytes(1, readTimeout);
             } catch (SerialPortTimeoutException e) {
-                log.trace("Timed out while reading header");
+                log.trace("Timed out while reading first byte");
                 return null;
             }
-            if (header.length != 2 || header[0] != HELLO) {
-                log.error("Did not get hello. Possibly out of sync. data=" + ByteUtils.bytesToHex(header));
+            if(okByte[0] == 0x15) {
+                log.info("Got NOK byte");
+                return new NotOkReply();
+            } else if (okByte[0] != HELLO) {
+                log.error("Did not get hello. Possibly out of sync. data=" + ByteUtils.bytesToHex(okByte));
                 throw new InvalidStateException();
             }
-            ModemCommand modemCommand = ModemCommand.getInboundCommand(header[1]);
+
+            byte[] cmdByte = serialPort.readBytes(1, readTimeout);
+            ModemCommand modemCommand = ModemCommand.getInboundCommand(cmdByte[0]);
             if (modemCommand == null) {
                 throw new InvalidStateException();
             }

@@ -33,7 +33,7 @@ public class StandardMessageReceived implements Reply {
     }
 
     public String toString() {
-        return "cmd= " + ModemCommand.SEND_STANDARD_OR_EXTENDED_MESSAGE_REPLY + "from=" + from +  " to=" +
+        return "cmd=" + ModemCommand.SEND_STANDARD_OR_EXTENDED_MESSAGE_REPLY + " from=" + from +  " to=" +
                 to + " cmd1=" + cmd1 + String.format(" cmd2=%02x flags=%02x", cmd2, flags);
     }
 
