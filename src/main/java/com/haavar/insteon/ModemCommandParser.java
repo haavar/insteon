@@ -2,7 +2,7 @@ package com.haavar.insteon;
 
 import com.haavar.insteon.messages.AllLinkResponse;
 import com.haavar.insteon.messages.BinaryMessage;
-import com.haavar.insteon.messages.ReplyMessage;
+import com.haavar.insteon.messages.SimpleReply;
 import com.haavar.insteon.messages.Message;
 import com.haavar.insteon.messages.StandardMessageReceived;
 import jssc.SerialPort;
@@ -64,7 +64,7 @@ public class ModemCommandParser {
                     return new AllLinkResponse(body);
                 case GET_FIRST_ALL_LINK_RECORD_REPLY:
                 case GET_NEXT_ALL_LINK_RECORD_REPLY:
-                    return new ReplyMessage(modemCommand, body);
+                    return new SimpleReply(modemCommand, body);
                 default:
                     log.info("Handling generic modem command " + modemCommand);
                     return new BinaryMessage(modemCommand, body);

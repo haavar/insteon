@@ -3,11 +3,13 @@ package com.haavar.insteon.messages;
 import com.haavar.insteon.DeviceId;
 import com.haavar.insteon.InsteonCommand;
 import com.haavar.insteon.ModemCommand;
+import lombok.Getter;
 
 /**
  * @author Haavar Valeur
  */
-public class StandardMessageReceived implements Message {
+@Getter
+public class StandardMessageReceived implements Reply {
     public static final int MESSAGE_LENGTH = 9;
     private DeviceId from;
     private DeviceId to;
@@ -31,7 +33,8 @@ public class StandardMessageReceived implements Message {
     }
 
     public String toString() {
-        return "from=" + from +  " to=" + to + " cmd1=" + cmd1 + String.format(" cmd2=%02x flags=%02x", cmd2, flags);
+        return "cmd= " + ModemCommand.SEND_STANDARD_OR_EXTENDED_MESSAGE_REPLY + "from=" + from +  " to=" +
+                to + " cmd1=" + cmd1 + String.format(" cmd2=%02x flags=%02x", cmd2, flags);
     }
 
 }
