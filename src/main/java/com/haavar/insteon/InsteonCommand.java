@@ -7,6 +7,7 @@ package com.haavar.insteon;
 public enum InsteonCommand {
     NO_OP(0x00),
     ASSIGN_TO_GROUP(0x01),
+    PRODUCT_DATA_REQUEST(0x03),
     DELETE_FROM_GROUP(0x02),
     PING(0x10),
 
