@@ -7,7 +7,6 @@ import jssc.SerialPort;
 import jssc.SerialPortException;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.IOException;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -26,18 +25,18 @@ public class JavaSimpleSerialConnection {
 
     public JavaSimpleSerialConnection(String port, MessageListener messageListener) {
         serialPort = new SerialPort(port);
-        try {
-            serialPort.openPort();
-            serialPort.setParams(SerialPort.BAUDRATE_19200,
-                    SerialPort.DATABITS_8,
-                    SerialPort.STOPBITS_1,
-                    SerialPort.PARITY_NONE);
-        } catch (SerialPortException e) {
-            throw new RuntimeException(e);
-        }
+        openPort(serialPort);
+
+
         Thread reader = new Thread(() -> {
-            while (serialPort.isOpened()) {
+            while (true) {
                 try {
+                    if (!serialPort.isCTS()) {
+                        log.info("Is not clear to send. Re-opening port.");
+                        // we could also listen for cts events
+                        serialPort.closePort();
+                        openPort(serialPort);
+                    }
                     Message message = commandParser.readMessage(serialPort, readTimeout);
                     if (message != null) {
                         if (Reply.class.isAssignableFrom(message.getClass())) {
@@ -48,11 +47,10 @@ public class JavaSimpleSerialConnection {
                         }
                         messageListener.onMessage(message);
                     }
-                } catch (ModemCommandParser.InvalidStateException | IOException e) {
+                } catch (Exception e) {
                     e.printStackTrace(); // todo: reset stream
                 }
             }
-            log.info("Serial port is closed. Stopped listening.");
         });
         reader.setDaemon(true);
         reader.start();
@@ -91,6 +89,28 @@ public class JavaSimpleSerialConnection {
                 serialPort.writeBytes(message.toBytes());
             } catch (SerialPortException e) {
                 throw new RuntimeException(e);
+            }
+        }
+    }
+
+    private void openPort(SerialPort serialPort) {
+        log.info("Opening serial port");
+
+        while(true) {
+            try {
+                serialPort.openPort();
+                serialPort.setParams(SerialPort.BAUDRATE_19200,
+                        SerialPort.DATABITS_8,
+                        SerialPort.STOPBITS_1,
+                        SerialPort.PARITY_NONE);
+                log.info("Serial port opened");
+                return;
+            } catch (SerialPortException e) {
+                log.info("Unable to open serial port " + e.getMessage());
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException ignore) {
+                }
             }
         }
     }

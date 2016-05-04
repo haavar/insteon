@@ -2,6 +2,7 @@ package com.haavar.insteon;
 
 import com.haavar.insteon.messages.AllLinkResponse;
 import com.haavar.insteon.messages.BinaryMessage;
+import com.haavar.insteon.messages.ExtendedMessageReceived;
 import com.haavar.insteon.messages.Reply;
 import com.haavar.insteon.messages.SimpleReply;
 import com.haavar.insteon.messages.StandardMessage;
@@ -10,7 +11,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import javax.sound.midi.SysexMessage;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
@@ -22,27 +22,30 @@ import java.util.concurrent.TimeoutException;
 public class JavaSimpleSerialConnectionIT {
 
     @Test
-    @Ignore
-    public void turnOnLight() throws InterruptedException {
+    public void turnOnAndOffLight() throws InterruptedException {
         MessageListener listener = (message) -> {
             log.info("Got message modemCommand=" + message.getModemCommand() + " "  + message);
         };
 
         JavaSimpleSerialConnection powerLinc = new JavaSimpleSerialConnection("/dev/tty.usbserial-A6028NA9", listener);
         DeviceId readingLamp = new DeviceId("2F57D5");
-
-        StandardMessage message = new StandardMessage(readingLamp, InsteonCommand.LIGHT_ON_FAST, (byte) 0xff);
-        powerLinc.sendMessage(message);
-        Thread.sleep(1000);
-        message = new StandardMessage(readingLamp, InsteonCommand.LIGHT_OFF_FAST, (byte) 0x00);
-        powerLinc.sendMessage(message);
         while(true){
-            Thread.sleep(1000);
+            try {
+                Thread.sleep(2000);
+                StandardMessage message = new StandardMessage(readingLamp, InsteonCommand.LIGHT_ON_FAST, (byte) 0xff);
+                powerLinc.sendMessage(message);
+                Thread.sleep(2000);
+                message = new StandardMessage(readingLamp, InsteonCommand.LIGHT_OFF_FAST, (byte) 0x00);
+                powerLinc.sendMessage(message);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
     }
 
     @Test
+    @Ignore
     public void getProductInfo() throws TimeoutException, InterruptedException {
         MessageListener listener = (message) -> {
             log.info("Message " + message);
