@@ -21,22 +21,25 @@ public class JavaSimpleSerialConnection {
     private ModemCommandParser commandParser = new ModemCommandParser();
     private SerialPort serialPort;
     private int readTimeout = 2000;
+    private int writeDelay = 500;
+    private long lastWriteTime;
 
 
     public JavaSimpleSerialConnection(String port, MessageListener messageListener) {
         serialPort = new SerialPort(port);
         openPort(serialPort);
 
-
         Thread reader = new Thread(() -> {
             while (true) {
                 try {
+                    /*
+                    // on the raspberry, it kept re-opening the port...
                     if (!serialPort.isCTS()) {
                         log.info("Is not clear to send. Re-opening port.");
                         // we could also listen for cts events
                         serialPort.closePort();
                         openPort(serialPort);
-                    }
+                    }*/
                     Message message = commandParser.readMessage(serialPort, readTimeout);
                     if (message != null) {
                         if (Reply.class.isAssignableFrom(message.getClass())) {
@@ -59,8 +62,10 @@ public class JavaSimpleSerialConnection {
 
     public Reply sendMessageBlocking(OutboundMessage message, int timeoutSec) throws TimeoutException {
         synchronized (LOCK) {
+            writeDelay();
             replyMessageReference.set(null);
             try {
+                log.info("About to send cts=" + serialPort.isCTS());
                 serialPort.writeBytes(message.toBytes());
             } catch (SerialPortException e) {
                 throw new RuntimeException(e);
@@ -85,12 +90,30 @@ public class JavaSimpleSerialConnection {
     
     public void sendMessage(OutboundMessage message) {
         synchronized (LOCK) {
+            writeDelay();
             try {
                 serialPort.writeBytes(message.toBytes());
             } catch (SerialPortException e) {
                 throw new RuntimeException(e);
             }
         }
+    }
+
+    /**
+     * For some reason the PLM does not handle back to back writes, and I have to give it a break.
+     * I have not found anything in the comm port state that indicates that it's ready for data.
+     * It does not matter that the PLM has ack'ed and responded to the last message.
+     */
+    private void writeDelay() {
+        long sleepTime =  lastWriteTime + writeDelay - System.currentTimeMillis();
+        if (sleepTime > 0) {
+            log.info("Sleeping " + sleepTime + "ms");
+            try {
+                Thread.sleep(sleepTime);
+            } catch (InterruptedException e) {
+            }
+        }
+        lastWriteTime = System.currentTimeMillis();
     }
 
     private void openPort(SerialPort serialPort) {
