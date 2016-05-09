@@ -12,6 +12,7 @@ public class ByteUtils {
      */
     public static byte[] hexToBytes(String input) {
         input = input.replaceAll(" ", "");
+        input = input.replaceAll("\\.", "");
 
         byte[] result = new byte[input.length() / 2];
         for (int i = 0; i < result.length; i++) { // can be reversable

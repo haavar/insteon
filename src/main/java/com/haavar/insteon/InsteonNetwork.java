@@ -6,6 +6,7 @@ import com.haavar.insteon.messages.Reply;
 import com.haavar.insteon.messages.StandardMessage;
 import com.haavar.insteon.messages.StandardMessageReceived;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.TimeoutException;
@@ -88,10 +89,26 @@ public class InsteonNetwork {
     }
 
     @Data
+    @NoArgsConstructor
     public static class ProductInfo {
         byte category;
         byte subCategory;
         byte firmwareVersion;
+
+        public ProductInfo(String info) {
+            this(ByteUtils.hexToBytes(info));
+        }
+
+        public ProductInfo(byte[] info) {
+            category = info[0];
+            subCategory = info[1];
+            firmwareVersion = info[2];
+        }
+
+        public String toString() {
+            return String.format("%02x.%02x.%02x", category, subCategory, firmwareVersion);
+        }
+
     }
 
 
